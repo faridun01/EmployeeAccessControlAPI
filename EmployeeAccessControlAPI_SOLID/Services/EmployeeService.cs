@@ -172,7 +172,6 @@ namespace EmployeeAccessControlAPI_SOLID.Services
 
         public int GetViolationCountForEmployee()
         {
-            // Example: return total number of violations across all employees
             return _context.Shifts
                 .Where(s =>
                     (s.Employee.Position != Position.CandleTester && s.HoursWorked < 9) ||
