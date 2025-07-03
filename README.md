@@ -32,17 +32,17 @@ This is a simple RESTful Web API built with ASP.NET Core that allows HR personne
 - `POST /AddEmployee` – Add a new employee  
 - `GET /GetEmployee/{id}` – Get employee by ID (with shifts)  
 - `PUT /UpdateEmployee` – Update employee details  
-- `DELETE /DeleteEmployee/{id}` – Delete employee  
+- `DELETE /DeleteEmployee/{id}` – Delete employee
+- `POST /GenerateShifts` – Auto-generate shifts for all employees (for current month)  
+
 
 ### 🕒 Shift Management
 
 - `POST /StartShift` – Mark employee start time  
 - `POST /EndShift` – Mark employee end time  
-- `POST /GenerateShifts` – Auto-generate shifts for all employees (for current month)  
 
 ### 🚨 Violation Tracking
 
-- `GET /GetViolations/{id}` – View violation count of a specific employee  
 - `GET /GetAllViolations` – View all employees with their violation counts  
 
 ---
