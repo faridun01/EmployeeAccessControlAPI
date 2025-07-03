@@ -14,11 +14,18 @@ namespace EmployeeAccessControlAPI_SOLID.Services
         }
         public string StartShift(int employeeId, DateTime startTime)
         {
-            var emp = _context.Employees.Include(e => e.Shifts).FirstOrDefault(e => e.Id == employeeId);
+            var emp = _context.Employees
+                .Include(e => e.Shifts)
+                .FirstOrDefault(e => e.Id == employeeId);
+
             if (emp == null)
                 return "Сотрудник не найден.";
 
-            // Правило: если предыдущая смена не завершена, нельзя начать новую.
+            // Проверка: начало смены не может быть позже 10:00
+            if (startTime.TimeOfDay > new TimeSpan(12, 0, 0))
+                return "Ошибка: смена не может начаться позже 12:00 am.";
+
+            // Проверка: если есть незакрытая смена — ошибка
             if (emp.Shifts.Any(s => s.StartTime != null && s.EndTime == null))
                 return "Ошибка: предыдущая смена не завершена.";
 
@@ -35,29 +42,37 @@ namespace EmployeeAccessControlAPI_SOLID.Services
 
         public string EndShift(int employeeId, DateTime endTime)
         {
-            var emp = _context.Employees.Include(e => e.Shifts).FirstOrDefault(e => e.Id == employeeId);
+            var emp = _context.Employees
+                .Include(e => e.Shifts)
+                .FirstOrDefault(e => e.Id == employeeId);
+
             if (emp == null)
                 return "Сотрудник не найден.";
 
-            // Правило: если сотрудник не пробил вход, нельзя отметить выход.
+            // Найти открытую смену
             var shift = emp.Shifts.FirstOrDefault(s => s.StartTime != null && s.EndTime == null);
             if (shift == null)
                 return "Ошибка: нет открытой смены.";
 
+            if (!shift.StartTime.HasValue)
+                return "Ошибка: время входа отсутствует.";
+
+            // Проверка: окончание смены должно быть в тот же день, что и начало
+            if (endTime.Date != shift.StartTime.Value.Date)
+                return "Ошибка: нельзя завершить смену в другой день, отличный от начала.";
+
+            // Проверка: выход не может быть раньше входа
             if (endTime < shift.StartTime)
                 return "Ошибка: время выхода раньше времени входа.";
 
-            if (shift.StartTime.HasValue)
-            {
-                shift.EndTime = endTime;
-                shift.HoursWorked = (endTime - shift.StartTime.Value).TotalHours;
-                _context.SaveChanges();
-                return "Смена завершена.";
-            }
-            else
-            {
-                return "Ошибка: время входа отсутствует.";
-            }
+            // Завершение смены
+            shift.EndTime = endTime;
+            shift.HoursWorked = (endTime - shift.StartTime.Value).TotalHours;
+
+            _context.SaveChanges();
+            return "Смена завершена.";
         }
-    } 
+
+
+    }
 }

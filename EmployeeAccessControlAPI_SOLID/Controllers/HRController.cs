@@ -1,6 +1,8 @@
 ﻿using EmployeeAccessControlAPI_SOLID.Models;
+using EmployeeAccessControlAPI_SOLID.Services;
 using EmployeeAccessControlAPI_SOLID.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeAccessControlAPI_SOLID.Controllers
 {
@@ -36,18 +38,38 @@ namespace EmployeeAccessControlAPI_SOLID.Controllers
         {
             if (id <= 0)
                 return BadRequest("Некорректный ID сотрудника.");
+
             try
             {
                 var employee = _employeeService.GetEmployee(id);
+
                 if (employee == null)
                     return NotFound($"Сотрудник с ID {id} не найден.");
-                return Ok(employee);
+
+                var result = new
+                {
+                    employee.Id,
+                    employee.FirstName,
+                    employee.LastName,
+                    employee.MiddleName,
+                    employee.Position,
+                    Shifts = employee.Shifts?.Select(s => new
+                    {
+                        s.Id,
+                        StartTime = s.StartTime?.ToString("yyyy-MM-dd HH:mm"),
+                        EndTime = s.EndTime?.ToString("yyyy-MM-dd HH:mm"),
+                        s.HoursWorked
+                    }).ToList()
+                };
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ошибка при получении сотрудника: {ex.Message}");
+                return StatusCode(500, $"Ошибка сервера при получении сотрудника: {ex.Message}");
             }
         }
+
 
         [HttpPut("UpdateEmployee")]
         public IActionResult UpdateEmployee([FromBody] Employee employee)
@@ -73,12 +95,36 @@ namespace EmployeeAccessControlAPI_SOLID.Controllers
             try
             {
                 _employeeService.DeleteEmployee(id);
-                return NoContent();
+                return Ok($"Сотрудник под ID {id} удалён");
             }
             catch (Exception ex)
             {
                 return BadRequest($"Ошибка при удалении сотрудника: {ex.Message}");
             }
         }
+
+        [HttpPost("GenerateShifts")]
+        public IActionResult GenerateMonthlyShifts()
+        {
+            _employeeService.GenerateShiftsForCurrentMonth();
+            return Ok("Смены успешно созданы.");
+        }
+
+        [HttpGet("GetAllEmployeeViolations")]
+        public IActionResult GetAllEmployeeViolations()
+        {
+            try
+            {
+                var result = _employeeService.GetEmployeesWithViolationCounts();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ошибка при получении нарушений: {ex.Message}");
+            }
+        }
+
+
+
     }
 }

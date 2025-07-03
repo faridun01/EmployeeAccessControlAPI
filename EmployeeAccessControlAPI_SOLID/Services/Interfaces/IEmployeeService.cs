@@ -8,5 +8,9 @@ namespace EmployeeAccessControlAPI_SOLID.Services.Interfaces
         Employee GetEmployee(int id);
         Employee UpdateEmployee(Employee employee);
         void DeleteEmployee(int id);
+        void GenerateShiftsForCurrentMonth();
+
+        Dictionary<int, int> GetViolationCountsForAllEmployees();
+        IEnumerable<object> GetEmployeesWithViolationCounts(); 
     }
 }
