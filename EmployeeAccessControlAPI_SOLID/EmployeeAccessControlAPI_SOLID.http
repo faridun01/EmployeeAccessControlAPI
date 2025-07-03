@@ -1,0 +1,6 @@
+@EmployeeAccessControlAPI_SOLID_HostAddress = http://localhost:5038
+
+GET {{EmployeeAccessControlAPI_SOLID_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
