@@ -21,7 +21,7 @@ This is a simple RESTful Web API built with ASP.NET Core that allows HR personne
 - Clean architecture with service interfaces
 - Swagger UI for testing endpoints
   
-  📌 API Endpoints
+##  📌 API Endpoints
 👤 Employee Management
 POST /AddEmployee – Add a new employee
 
